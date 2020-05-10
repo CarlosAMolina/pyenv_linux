@@ -1,0 +1,46 @@
+NAME
+    pyenv_linux - pyenv configuration for Linux systems.
+SYNOPSIS
+    This script should be called with '/bin/bash' or 'source'.
+    Only one argument option can be provided at each execution.
+    # /bin/bash
+    /bin/bash pyenv_linux [-h --help] [-c --configure]
+                          [-id --install-dependencies]
+                          [-ip --install-pyenv <pyenv path>]
+    # source
+    source pyenv_linux [-s --set <python version>]
+DESCRIPTION
+    This script installs and configures pyenv in a Linux system.
+OPTIONS
+    -c --configure
+        Modifies the necessary files to work with pyenv and reloads
+        the shell.
+        Files modified: ~/.bashrc
+        Run example:
+        /bin/bash pyenv_linux -c
+    -h --help
+        Shows the man page.
+        Run example:
+        /bin/bash pyenv_linux -h
+    -id --install-dependencies
+        Installs dependencies with apt.
+        This option must be executed by the command sudo.
+        Run example:
+        sudo /bin/bash pyenv_linux -id
+    -ip --install-pyenv <pyenv path>
+        Installs pyenv.
+        This option can be executed by the user who will use pyenv 
+        (in order to make installations in the user paths) or with 
+        the installation path as an argument. The folder '.pyenv' will
+        be added to the provided path.
+        Run examples:
+        /bin/bash -ip
+        /bin/bash -ip /home/nonroot
+    -s --set <python version>
+        Sets the desired python version. If it does not exist, it is
+        downloaded with pyenv.
+        Replace <python version> with the python version to set.
+        Tho use this option, the script must be called with the command
+        'source'.
+        Run example:
+        source pyenv_linux -s 3.7.2

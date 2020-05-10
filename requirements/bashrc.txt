@@ -1,0 +1,4 @@
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+# Automatically activate a virtual environment when selecting one.
+eval "$(pyenv virtualenv-init -)"

@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# References.
+# - Dependencies.
+# https://realpython.com/intro-to-pyenv/
+# - pyenv.
+# https://github.com/pyenv/pyenv/issues/492
+# Install custom path:
+# https://github.com/pyenv/pyenv-virtualenv/issues/53
+# - Script.
+# https://stackoverflow.com/questions/16618071/can-i-export-a-variable-to-the-environment-from-a-bash-script-without-sourcing-i
+# https://www.atareao.es/tutorial/scripts-en-bash/una-ayuda-para-tus-scripts/
+
+function show_man(){
+    # Show man page.
+    echo "$(cat documentation/man.txt)"
+}
+
+function install_dependencies(){
+    # Install dependencies with apt.
+    # To use this function the script must be executed as superuser.
+    echo "[DEBUG] Installing dependencies"
+    apt-get install -y make $(cat requirements/apt.txt)
+}
+
+function install_pyenv(){
+    # Install pyenv.
+    # The pyenv intallation path may be supplied by the user as an
+    # argument. The folder .pyenv will be added to the provided path.
+    echo "[DEBUG] Installing pyenv"
+    # Check if custom installatio path was provided.
+    if [ -z "$pyenv_path" ]
+    then
+        echo "[DEBUG] No custom path for pyenv installation supplied"
+    else
+        echo "[DEBUG] Installation path provided: $pyenv_path" 
+        # Add the .pyenv folder.
+        # If the provided path ends with an / does not raise errors 
+        # when adding /.pyenv.
+        pyenv_path="${pyenv_path}/.pyenv"
+        echo "[DEBUG] Installation path for pyenv: $pyenv_path" 
+        export PYENV_ROOT="$pyenv_path"
+    fi
+    # Installation.
+    /bin/bash requirements/pyenv
+}
+
+function modify_bashrc(){
+    # Add required rows to the file ~/.bashrc.
+    echo "[DEBUG] Modifying ~/.bashrc"
+    cat requirements/bashrc.txt >> ~/.bashrc
+}
+
+function set_python_version(){
+    # Set desired python version.
+    # The python version was supplied by the user as an argument.
+    echo "[DEBUG] Setting version: $python_version"
+    export PYENV_VERSION=$python_version
+}
+
+function install_python_version(){
+    # Install desired python version if it is not installed yet. Using
+    # pyenv.
+    # The python version was supplied by the user as an argument.
+    echo "[DEBUG] Installing version (if it's new): $python_version"
+    pyenv install -s -v "$python_version"
+}
+
+function show_python_version(){
+    # Show current activated python version.
+    echo "[DEBUG] Current version: $(pyenv version)"
+}
+
+# Main
+# Check any argument supplied.
+if [ $# -eq 0 ]
+then
+    echo "[ERROR] Not arguments supplied"
+    echo
+    show_man
+fi
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -h|--help)
+            show_man
+            # Delete argument $1.
+            shift
+            ;;
+        -c|--configure)
+            modify_bashrc
+            # Reload the shell.
+            exec "$SHELL"
+            # Delete argument $1.
+            shift
+            ;;
+        -id|--install-dependencies)
+            install_dependencies
+            # Delete argument $1.
+            shift
+            ;;
+        -ip|--install-pyenv)
+            pyenv_path="$2"
+            install_pyenv
+            # Delete argument $1.
+            shift
+            # Delete argument $2.
+            shift
+            ;;
+        -s|--set)
+            python_version="$2"
+            # Check the python versin has been specified.
+            if [ -z "$python_version" ]
+            then
+                echo "[ERROR] No python version supplied"
+                echo
+                show_man
+                # Delete argument $1.
+                shift
+            else
+                echo "[DEBUG] Python version to configure: $python_version"
+                show_python_version
+                install_python_version
+                set_python_version
+                show_python_version
+                # Delete argument $1.
+                shift
+                # Delete argument $2.
+                shift
+            fi
+            ;;
+        *)
+            echo "[ERROR]: unknown option: $key"
+            echo
+            show_man
+            ;;
+    esac
+done
